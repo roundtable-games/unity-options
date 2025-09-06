@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Roundtable.Utilities
 {
@@ -22,10 +23,14 @@ namespace Roundtable.Utilities
     /// <summary>
     ///     Generic "Option" type as used in functional programming languages.
     /// </summary>
-    public readonly struct Option<T> : IEquatable<Option<T>>, IEquatable<T>
+    [Serializable]
+    public struct Option<T> : IEquatable<Option<T>>, IEquatable<T>
     {
-        private readonly T _value;
-        private readonly bool _hasValue;
+        [SerializeField]
+        private T _value;
+        
+        [SerializeField]
+        private bool _hasValue;
 
         private Option(T value, bool hasValue)
         {
@@ -60,7 +65,7 @@ namespace Roundtable.Utilities
         /// <returns>
         ///     True if the Option is not None.
         /// </returns>
-        public bool IsSome => _hasValue;
+        public readonly bool IsSome => _hasValue;
 
         /// <summary>
         ///     Whether the Option does not wrap a value.
@@ -68,7 +73,7 @@ namespace Roundtable.Utilities
         /// <returns>
         ///     True if the Option is not Some.
         /// </returns>
-        public bool IsNone => !_hasValue;
+        public readonly bool IsNone => !_hasValue;
 
         /// <summary>
         ///     Create an <see cref="Option{T}"/> wrapping <paramref name="value"/>.
@@ -85,18 +90,18 @@ namespace Roundtable.Utilities
             return option;
         }
 
-        public bool IsSomeAnd(Predicate<T> predicate)
+        public readonly bool IsSomeAnd(Predicate<T> predicate)
         {
             throw new NotImplementedException();
         }
 
-        public bool IsNoneOr(Predicate<T> predicate)
+        public readonly bool IsNoneOr(Predicate<T> predicate)
         {
             throw new NotImplementedException();
         }
 
         // panics with a provided custom message
-        public T Expect(string message)
+        public readonly T Expect(string message)
         {
             throw new NotImplementedException();
         }
@@ -115,7 +120,7 @@ namespace Roundtable.Utilities
         /// <returns>
         ///     A new Option mapped from this value using <paramref name="mapper"/>.
         /// </returns>
-        public Option<U> Map<U>(Func<T, U> mapper)
+        public readonly Option<U> Map<U>(Func<T, U> mapper)
         {
             if (mapper is null)
                 throw new ArgumentNullException(nameof(mapper));
@@ -143,7 +148,7 @@ namespace Roundtable.Utilities
         /// <returns>
         ///     A new Option mapped from this value using <paramref name="mapper"/>.
         /// </returns>
-        public Option<U> MapOr<U>(Func<T, U> mapper, U value)
+        public readonly Option<U> MapOr<U>(Func<T, U> mapper, U value)
         {
             if (mapper is null)
                 throw new ArgumentNullException(nameof(mapper));
@@ -171,7 +176,7 @@ namespace Roundtable.Utilities
         /// <returns>
         ///     A new Option mapped from this value using <paramref name="mapper"/>.
         /// </returns>
-        public Option<U> MapOrElse<U>(Func<T, U> mapper, Func<U> func)
+        public readonly Option<U> MapOrElse<U>(Func<T, U> mapper, Func<U> func)
         {
             if (mapper is null)
                 throw new ArgumentNullException(nameof(mapper));
@@ -194,14 +199,14 @@ namespace Roundtable.Utilities
         /// <returns>
         ///     True if the Option contains a value.
         /// </returns>
-        public bool TryUnwrap(out T value)
+        public readonly bool TryUnwrap(out T value)
         {
             value = _value;
             return _hasValue;
         }
 
         // panics with a generic message
-        public T Unwrap()
+        public readonly T Unwrap()
         {
             throw new NotImplementedException();
         }
@@ -217,7 +222,7 @@ namespace Roundtable.Utilities
         ///     The wrapped value, or <paramref name="value"/> if the Option
         ///     is None.
         /// </returns>
-        public T UnwrapOr(T value)
+        public readonly T UnwrapOr(T value)
         {
             if (IsNone)
                 return value;
@@ -226,7 +231,7 @@ namespace Roundtable.Utilities
         }
 
         // returns the default value of the type T
-        public T UnwrapOrDefault()
+        public readonly T UnwrapOrDefault()
         {
             throw new NotImplementedException();
         }
@@ -246,7 +251,7 @@ namespace Roundtable.Utilities
         ///     The wrapped value, or the value returned by
         ///     <paramref name="func"/> if the Option is None.
         /// </returns>
-        public T UnwrapOrElse(Func<T> func)
+        public readonly T UnwrapOrElse(Func<T> func)
         {
             if (IsNone)
             {
@@ -259,7 +264,7 @@ namespace Roundtable.Utilities
             return _value;
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             unchecked
             {
@@ -268,7 +273,7 @@ namespace Roundtable.Utilities
             }
         }
 
-        public override bool Equals(object obj)
+        public readonly override bool Equals(object obj)
         {
             if (obj is Option<T> other)
             {
@@ -282,7 +287,7 @@ namespace Roundtable.Utilities
             return false;
         }
 
-        public bool Equals(Option<T> other)
+        public readonly bool Equals(Option<T> other)
         {
             if (IsNone)
                 return other.IsNone;
@@ -294,7 +299,7 @@ namespace Roundtable.Utilities
             return isEqual;
         }
 
-        public bool Equals(T value)
+        public readonly bool Equals(T value)
         {
             if (IsNone)
                 return false;
@@ -303,7 +308,7 @@ namespace Roundtable.Utilities
             return isEqual;
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             string result = string.Format("(Option) {0}", IsNone ? "None" : _value.ToString());
             return result;
