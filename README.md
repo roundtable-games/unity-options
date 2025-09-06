@@ -19,3 +19,7 @@ In code, some shorthand syntax is provided to simplify working with `Option<T>` 
 `Option.Some(T)` can also be used as a substitute for `Option<T>.Some(T)`. However, a simpler implicit conversion also exists that allows `Option<T>` to be populated from literal values (i.e., `Option<int> value = 5` is equivalent to `Option<int> value = Option.Some(5)`).
 
 <img width="555" height="125" alt="image" src="https://github.com/user-attachments/assets/02c890e8-9021-4e72-a8d8-5b71d7dd84b2" />
+
+# Install via git URL
+To use this package in your Unity project, install via git url using the following link:
+`https://github.com/roundtable-games/unity-options.git`
