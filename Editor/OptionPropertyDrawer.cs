@@ -41,9 +41,13 @@ namespace Roundtable.Utilities
 
         private static void DrawValuePropertyUnderneath(Rect position, SerializedProperty property)
         {
+            EditorGUI.indentLevel++;
+
             position.y += EditorGUIUtility.singleLineHeight;
             position.height -= EditorGUIUtility.singleLineHeight;
             EditorGUI.PropertyField(position, property);
+
+            EditorGUI.indentLevel--;
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -64,6 +68,9 @@ namespace Roundtable.Utilities
 
         private static bool IsSingleLineProperty(SerializedProperty property)
         {
+            if (property.isArray)
+                return false;
+
             var height = EditorGUI.GetPropertyHeight(property, includeChildren: true);
             bool result = (height == EditorGUIUtility.singleLineHeight);
             return result;
