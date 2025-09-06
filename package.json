@@ -1,0 +1,13 @@
+{
+    "name": "com.roundtable.utilities.options",
+    "version": "1.0.0",
+    "displayName": "Options",
+    "description": "A small Unity package that provides a serializable 'Option' implementation.",
+    "keywords": [
+        "Option",
+        "Options"
+    ],
+    "author": {
+        "name": "Roundtable Games"
+  }
+}
