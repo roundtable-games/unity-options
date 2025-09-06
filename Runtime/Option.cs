@@ -91,6 +91,61 @@ namespace Roundtable.Utilities
         }
 
         /// <summary>
+        ///     Returns <paramref name="other"/> if <see cref="IsSome"/> and
+        ///     <paramref name="other"/> <see cref="IsSome"/>.
+        /// </summary>
+        /// <typeparam name="U">
+        ///     The inner value type of <paramref name="other"/>.
+        /// </typeparam>
+        /// <param name="other">
+        ///     The <see cref="Option{U}"/> treated as the right-hand-side
+        ///     of the 'and' operation.
+        /// </param>
+        /// <returns>
+        ///     <paramref name="other"/> if this and <paramref name="other"/>
+        ///     both have a value, otherwise <see cref="None"/>.
+        /// </returns>
+        public readonly Option<U> And<U>(Option<U> other)
+        {
+            var result = (IsSome && other.IsSome)
+                ? other
+                : Option<U>.None;
+
+            return result;
+        }
+
+        /// <summary>
+        ///     If <see cref="IsSome"/>, returns the result of <paramref name="func"/>.
+        /// </summary>
+        /// <remarks>
+        ///     Used to chain together transformations that can safely fail if
+        ///     the preceeding operation evaluated to <see cref="None"/>.
+        /// </remarks>
+        /// <typeparam name="U">
+        ///     The new option type described by the transformation
+        ///     of <paramref name="func"/>.
+        /// </typeparam>
+        /// <param name="func">
+        ///     A transformation applied to the wrapped value if
+        ///     <see cref="IsSome"/>.
+        /// </param>
+        /// <returns>
+        ///     <see cref="None"/> is <see cref="IsNone"/>, otherwise the result
+        ///     of <paramref name="func"/> applied to the wrapped value.
+        /// </returns>
+        public readonly Option<U> AndThen<U>(Func<T, Option<U>> func)
+        {
+            if (!TryUnwrap(out var value))
+                return Option<U>.None;
+
+            if (func is null)
+                throw new ArgumentNullException(nameof(func));
+
+            var result = func(value);
+            return result;
+        }
+
+        /// <summary>
         ///     Get the wrapped value of the option unsafely. If 
         ///     <see cref="IsNone"/>, this throws an
         ///     <see cref="InvalidOperationException"/> with
@@ -241,6 +296,47 @@ namespace Roundtable.Utilities
                 throw new ArgumentNullException(nameof(mapper));
 
             return Option<U>.Some(mapper(_value));
+        }
+
+        /// <summary>
+        ///     Returns the option if <see cref="IsSome"/>, otherwise
+        ///     returns <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other">
+        ///     The <see cref="Option{T}"/> treated as the right-hand-side
+        ///     of the 'or' operation.
+        /// </param>
+        /// <returns>
+        ///     This option if <see cref="IsSome"/>, otherwise
+        ///     <paramref name="other"/>.
+        /// </returns>
+        public readonly Option<T> Or(Option<T> other)
+        {
+            var result = IsSome ? this : other;
+            return result;
+        }
+
+        /// <summary>
+        ///     Returns the option if <see cref="IsSome"/>, otherwise
+        ///     returns the result of <paramref name="func"/>.
+        /// </summary>
+        /// <param name="func">
+        ///     The expression evaluated if <see cref="IsNone"/>.
+        /// </param>
+        /// <returns>
+        ///     This option if <see cref="IsSome"/>, otherwise the result of
+        ///     <paramref name="func"/>.
+        /// </returns>
+        public readonly Option<T> OrElse(Func<Option<T>> func)
+        {
+            if (IsSome)
+                return this;
+
+            if (func is null)
+                throw new ArgumentNullException(nameof(func));
+
+            var result = func();
+            return result;
         }
 
         /// <summary>
