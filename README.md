@@ -12,6 +12,6 @@ Designers can use a basic checkbox to specify whether the option has a value. If
 # Shorthand syntax
 In code, some shorthand syntax is provided to simplify working with `Option<T>` types:
 
-`Option.None` evaluates to a simple struct type that can be implicitly converted to any `Option<T>.None` equivalent, such that the expression `Option<SomeComplexType> myValue = Option.None` has the same effective behavior as `Option<SomeComplexType> myValue = Option<SomeComplexType>`.
+`Option.None` evaluates to a simple struct type that can be implicitly converted to any `Option<T>.None` equivalent, such that the expression `Option<SomeComplexType> myValue = Option.None` has the same effective behavior as `Option<SomeComplexType> myValue = Option<SomeComplexType>.None`.
 
 `Option.Some(T)` can also be used as a substitute for `Option<T>.Some(T)`. However, a simpler implicit conversion also exists that allows `Option<T>` to be populated from literal values (i.e., `Option<int> value = 5` is equivalent to `Option<int> value = Option.Some(5)`).
