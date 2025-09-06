@@ -1,10 +1,22 @@
 using System;
 
-namespace PillowFortress
+namespace Roundtable.Utilities
 {
+    /// <summary>
+    ///     Untyped <see cref="Option{T}"/> helper. Used as a shorthand for writing
+    ///     <c>Option.None</c> or <c>Option.Some(T)</c> as substitutions for more
+    ///     verbose <c>Option{T}.None</c> or <c>Option{T}.Some(T)</c> expressions.
+    /// </summary>
     public readonly struct Option
     {
-        public static Option None { get; } = new();
+        /// <summary>
+        ///     Get a default <see cref="Option"/> that can be implicitly
+        ///     converted to any <see cref="Option{T}.None"/> value.
+        /// </summary>
+        public static Option None => new();
+
+        /// <inheritdoc cref="Option{T}.Some(T)"/>
+        public static Option<T> Some<T>(T value) => Option<T>.Some(value);
     }
 
     /// <summary>
@@ -33,11 +45,30 @@ namespace PillowFortress
         /// <returns>
         ///     A new Option object that encapsulates no value.
         /// </returns>
-        public static Option<T> None()
+        public static Option<T> None
         {
-            var option = new Option<T>(default, hasValue: false);
-            return option;
+            get
+            {
+                var option = new Option<T>(default, hasValue: false);
+                return option;
+            }
         }
+
+        /// <summary>
+        ///     Whether the Option wraps a value.
+        /// </summary>
+        /// <returns>
+        ///     True if the Option is not None.
+        /// </returns>
+        public bool IsSome => _hasValue;
+
+        /// <summary>
+        ///     Whether the Option does not wrap a value.
+        /// </summary>
+        /// <returns>
+        ///     True if the Option is not Some.
+        /// </returns>
+        public bool IsNone => !_hasValue;
 
         /// <summary>
         ///     Create an <see cref="Option{T}"/> wrapping <paramref name="value"/>.
@@ -54,21 +85,21 @@ namespace PillowFortress
             return option;
         }
 
-        /// <summary>
-        ///     Whether the Option wraps a value.
-        /// </summary>
-        /// <returns>
-        ///     True if the Option is not None.
-        /// </returns>
-        public bool IsSome() => _hasValue;
+        public bool IsSomeAnd(Predicate<T> predicate)
+        {
+            throw new NotImplementedException();
+        }
 
-        /// <summary>
-        ///     Whether the Option does not wrap a value.
-        /// </summary>
-        /// <returns>
-        ///     True if the Option is not Some.
-        /// </returns>
-        public bool IsNone() => !_hasValue;
+        public bool IsNoneOr(Predicate<T> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        // panics with a provided custom message
+        public T Expect(string message)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         ///     Map the value of this Option to a <see cref="Option{U}"/>
@@ -89,8 +120,8 @@ namespace PillowFortress
             if (mapper is null)
                 throw new ArgumentNullException(nameof(mapper));
 
-            if (IsNone())
-                return Option<U>.None();
+            if (IsNone)
+                return Option<U>.None;
 
             return Option<U>.Some(mapper(_value));
         }
@@ -103,21 +134,21 @@ namespace PillowFortress
         /// <typeparam name="U">
         ///     The value type of the returned option.
         /// </typeparam>
-        /// <param name="value">
-        ///     The value to be used if the current value is None.
-        /// </param>
         /// <param name="mapper">
         ///     The mapper function used to convert the value.
+        /// </param>
+        /// <param name="value">
+        ///     The value to be used if the current value is None.
         /// </param>
         /// <returns>
         ///     A new Option mapped from this value using <paramref name="mapper"/>.
         /// </returns>
-        public Option<U> MapOr<U>(U value, Func<T, U> mapper)
+        public Option<U> MapOr<U>(Func<T, U> mapper, U value)
         {
             if (mapper is null)
                 throw new ArgumentNullException(nameof(mapper));
 
-            if (IsNone())
+            if (IsNone)
                 return Option<U>.Some(value);
 
             return Option<U>.Some(mapper(_value));
@@ -131,24 +162,24 @@ namespace PillowFortress
         /// <typeparam name="U">
         ///     The value type of the returned option.
         /// </typeparam>
-        /// <param name="func">
-        ///     The expression to be used if the current value is None.
-        /// </param>
         /// <param name="mapper">
         ///     The mapper function used to convert the value.
+        /// </param>
+        /// <param name="func">
+        ///     The expression to be used if the current value is None.
         /// </param>
         /// <returns>
         ///     A new Option mapped from this value using <paramref name="mapper"/>.
         /// </returns>
-        public Option<U> MapOrElse<U>(Func<U> func, Func<T, U> mapper)
+        public Option<U> MapOrElse<U>(Func<T, U> mapper, Func<U> func)
         {
-            if (func is null)
-                throw new ArgumentNullException(nameof(func));
-
             if (mapper is null)
                 throw new ArgumentNullException(nameof(mapper));
 
-            if (IsNone())
+            if (func is null)
+                throw new ArgumentNullException(nameof(func));
+
+            if (IsNone)
                 return Option<U>.Some(func());
 
             return Option<U>.Some(mapper(_value));
@@ -169,6 +200,12 @@ namespace PillowFortress
             return _hasValue;
         }
 
+        // panics with a generic message
+        public T Unwrap()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         ///     If the option is Some, then return the wrapped value, otherwise
         ///     return <paramref name="value"/>.
@@ -182,10 +219,16 @@ namespace PillowFortress
         /// </returns>
         public T UnwrapOr(T value)
         {
-            if (IsNone())
+            if (IsNone)
                 return value;
 
             return _value;
+        }
+
+        // returns the default value of the type T
+        public T UnwrapOrDefault()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -205,7 +248,7 @@ namespace PillowFortress
         /// </returns>
         public T UnwrapOrElse(Func<T> func)
         {
-            if (IsNone())
+            if (IsNone)
             {
                 if (func is null)
                     throw new ArgumentNullException(nameof(func));
@@ -241,31 +284,33 @@ namespace PillowFortress
 
         public bool Equals(Option<T> other)
         {
-            if (IsNone())
-                return other.IsNone();
+            if (IsNone)
+                return other.IsNone;
 
-            if (IsSome() && !other.IsSome())
+            if (IsSome && !other.IsSome)
                 return false;
 
-            return _value.Equals(other._value);
+            bool isEqual = _value.Equals(other._value);
+            return isEqual;
         }
 
         public bool Equals(T value)
         {
-            if (IsNone())
+            if (IsNone)
                 return false;
 
-            return _value.Equals(value);
+            bool isEqual = _value.Equals(value);
+            return isEqual;
         }
 
         public override string ToString()
         {
-            string result = string.Concat("[Option] ", IsNone() ? "None" : _value.ToString());
+            string result = string.Format("(Option) {0}", IsNone ? "None" : _value.ToString());
             return result;
         }
 
         public static implicit operator Option<T>(T value) => Some(value);
-        public static implicit operator Option<T>(Option _) => None();
+        public static implicit operator Option<T>(Option _) => None;
 
         public static bool operator ==(Option<T> a, Option<T> b) => a.Equals(b);
         public static bool operator !=(Option<T> a, Option<T> b) => !a.Equals(b);
