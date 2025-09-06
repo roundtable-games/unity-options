@@ -90,12 +90,25 @@ namespace Roundtable.Utilities
             return option;
         }
 
-        // panics with a provided custom message
+        /// <summary>
+        ///     Get the wrapped value of the option unsafely. If 
+        ///     <see cref="IsNone"/>, this throws an
+        ///     <see cref="InvalidOperationException"/> with
+        ///     <paramref name="message"/>.
+        /// </summary>
+        /// <returns>
+        ///     The <typeparamref name="T"/> if <see cref="IsSome"/>.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///     Thrown if <see cref="IsNone"/>.
+        /// </exception>
         public readonly T Expect(string message)
         {
-            throw new NotImplementedException();
-        }
+            if (!TryUnwrap(out T value))
+                throw new InvalidOperationException(message);
 
+            return value;
+        }
         /// <summary>
         ///     Check that the option <see cref="IsSome"/> and the value is
         ///     matched by <paramref name="predicate"/>.
@@ -245,10 +258,23 @@ namespace Roundtable.Utilities
             return _hasValue;
         }
 
-        // panics with a generic message
+        /// <summary>
+        ///     Get the wrapped value of the option unsafely. If 
+        ///     <see cref="IsNone"/>, this throws an
+        ///     <see cref="InvalidOperationException"/>.
+        /// </summary>
+        /// <returns>
+        ///     The <typeparamref name="T"/> if <see cref="IsSome"/>.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///     Thrown if <see cref="IsNone"/>.
+        /// </exception>
         public readonly T Unwrap()
         {
-            throw new NotImplementedException();
+            if (!TryUnwrap(out T value))
+                throw new InvalidOperationException("Failed to unwrap Option; value is 'None'.");
+
+            return value;
         }
 
         /// <summary>
@@ -326,16 +352,14 @@ namespace Roundtable.Utilities
 
         public readonly override bool Equals(object obj)
         {
-            if (obj is Option<T> other)
+            bool result = obj switch
             {
-                return Equals(other);
-            }
-            else if (obj is T value)
-            {
-                return Equals(value);
-            }
+                Option<T> other => Equals(other),
+                T value => Equals(value),
+                _ => false
+            };
 
-            return false;
+            return result;
         }
 
         public readonly bool Equals(Option<T> other)
