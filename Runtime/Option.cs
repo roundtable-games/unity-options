@@ -90,20 +90,58 @@ namespace Roundtable.Utilities
             return option;
         }
 
-        public readonly bool IsSomeAnd(Predicate<T> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public readonly bool IsNoneOr(Predicate<T> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
         // panics with a provided custom message
         public readonly T Expect(string message)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        ///     Check that the option <see cref="IsSome"/> and the value is
+        ///     matched by <paramref name="predicate"/>.
+        /// </summary>
+        /// <param name="predicate">
+        ///     A condition to evaluate for the value of the option, if the
+        ///     option is not <see cref="None"/>.
+        /// </param>
+        /// <returns>
+        ///     True if the option <see cref="IsSome"/> and
+        ///     <paramref name="predicate"/> is true.
+        /// </returns>
+        public readonly bool IsSomeAnd(Predicate<T> predicate)
+        {
+            if (!TryUnwrap(out var value))
+                return false;
+
+            if (predicate is null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            bool result = predicate(value);
+            return result;
+        }
+
+        /// <summary>
+        ///     Check whether the value <see cref="IsNone"/>, or that the
+        ///     value is matched by <paramref name="predicate"/>.
+        /// </summary>
+        /// <param name="predicate">
+        ///     A condition to evaluate for the value of the option, if the
+        ///     option is not <see cref="None"/>.
+        /// </param>
+        /// <returns>
+        ///     True if <see cref="IsNone"/> or <see cref="IsSome"/> and
+        ///     <paramref name="predicate"/> evaluates to true.
+        /// </returns>
+        public readonly bool IsNoneOr(Predicate<T> predicate)
+        {
+            if (TryUnwrap(out var value))
+                return false;
+
+            if (predicate is null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            bool result = predicate(value);
+            return result;
         }
 
         /// <summary>
@@ -122,11 +160,11 @@ namespace Roundtable.Utilities
         /// </returns>
         public readonly Option<U> Map<U>(Func<T, U> mapper)
         {
-            if (mapper is null)
-                throw new ArgumentNullException(nameof(mapper));
-
             if (IsNone)
                 return Option<U>.None;
+
+            if (mapper is null)
+                throw new ArgumentNullException(nameof(mapper));
 
             return Option<U>.Some(mapper(_value));
         }
@@ -150,11 +188,11 @@ namespace Roundtable.Utilities
         /// </returns>
         public readonly Option<U> MapOr<U>(Func<T, U> mapper, U value)
         {
-            if (mapper is null)
-                throw new ArgumentNullException(nameof(mapper));
-
             if (IsNone)
                 return Option<U>.Some(value);
+
+            if (mapper is null)
+                throw new ArgumentNullException(nameof(mapper));
 
             return Option<U>.Some(mapper(_value));
         }
@@ -178,14 +216,16 @@ namespace Roundtable.Utilities
         /// </returns>
         public readonly Option<U> MapOrElse<U>(Func<T, U> mapper, Func<U> func)
         {
+            if (IsNone)
+            {
+                if (func is null)
+                    throw new ArgumentNullException(nameof(func));
+
+                return Option<U>.Some(func());
+            }
+
             if (mapper is null)
                 throw new ArgumentNullException(nameof(mapper));
-
-            if (func is null)
-                throw new ArgumentNullException(nameof(func));
-
-            if (IsNone)
-                return Option<U>.Some(func());
 
             return Option<U>.Some(mapper(_value));
         }
@@ -194,10 +234,10 @@ namespace Roundtable.Utilities
         ///     Try to unwrap the option.
         /// </summary>
         /// <param name="value">
-        ///     The value contained in the Option, if not None.
+        ///     The value contained in the option, if not None.
         /// </param>
         /// <returns>
-        ///     True if the Option contains a value.
+        ///     True if <see cref="IsSome"/>.
         /// </returns>
         public readonly bool TryUnwrap(out T value)
         {
@@ -212,15 +252,15 @@ namespace Roundtable.Utilities
         }
 
         /// <summary>
-        ///     If the option is Some, then return the wrapped value, otherwise
+        ///     If <see cref="IsSome"/>, then return the wrapped value, otherwise
         ///     return <paramref name="value"/>.
         /// </summary>
         /// <param name="value">
         ///     The value to be returned if the Option is None.
         /// </param>
         /// <returns>
-        ///     The wrapped value, or <paramref name="value"/> if the Option
-        ///     is None.
+        ///     The wrapped value, or <paramref name="value"/> if
+        ///     <see cref="IsNone"/>.
         /// </returns>
         public readonly T UnwrapOr(T value)
         {
@@ -230,10 +270,21 @@ namespace Roundtable.Utilities
             return _value;
         }
 
-        // returns the default value of the type T
+        /// <summary>
+        ///     If <see cref="IsSome"/>, returns the wrapped value, otherwise
+        ///     returns the <see langword="default"/> value of
+        ///     <typeparamref name="T"/>.
+        /// </summary>
+        /// <returns>
+        ///     The wrapped value of the option, otherwise the
+        ///     <see langword="default"/> value of <typeparamref name="T"/> 
+        /// </returns>
         public readonly T UnwrapOrDefault()
         {
-            throw new NotImplementedException();
+            if (IsNone)
+                return default;
+
+            return _value;
         }
 
         /// <summary>
