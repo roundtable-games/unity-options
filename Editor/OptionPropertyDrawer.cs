@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Roundtable.Utilities
+namespace Roundtable.Utilities.Editor
 {
     /// <summary>
     ///     Custom <see cref="PropertyDrawer"/> for <see cref="Option{T}"/> types.
@@ -72,7 +72,7 @@ namespace Roundtable.Utilities
                 return false;
 
             var height = EditorGUI.GetPropertyHeight(property, includeChildren: true);
-            bool result = (height == EditorGUIUtility.singleLineHeight);
+            bool result = height == EditorGUIUtility.singleLineHeight;
             return result;
         }
     }
